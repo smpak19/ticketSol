@@ -4,28 +4,29 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract TicketNFT is ERC721, Ownable {
+contract TicketNFT is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenId;
 
     mapping(address => bool) private _hasTicket;
 
     string public concertName;
-    uint256 public concertDate;
     uint256 public maxTicketCount;
     uint256 public ticketPrice;
     bool public finish;
+    string public tokenURI;
 
-    event ConcertOver(string concertName, uint256 concertDate);
+    event ConcertOver(string concertName);
     event TicketSold(uint256 tokenId, address indexed buyer);
 
-    constructor(string memory _concertName, uint256 _concertDate, uint256 _maxTicketCount, uint256 _ticketPrice) ERC721(_concertName, "MTK") {
+    constructor(string memory _concertName, uint256 _maxTicketCount, uint256 _ticketPrice, string memory _tokenURI) ERC721(_concertName, "MTK") {
         concertName = _concertName;
-        concertDate = _concertDate;
         maxTicketCount = _maxTicketCount;
         ticketPrice = _ticketPrice * 1e15;
         finish = false;
+        tokenURI = _tokenURI;
     }
 
     function safeMint(address to) private {
@@ -35,6 +36,7 @@ contract TicketNFT is ERC721, Ownable {
         require(!_hasTicket[to], "You already have a ticket for this concert");
         _tokenId.increment();
         _safeMint(to, _tokenId.current());
+        _setTokenURI(_tokenId.current(), tokenURI);
 
         _hasTicket[to] = true;
     }
@@ -57,7 +59,7 @@ contract TicketNFT is ERC721, Ownable {
     // Set when concert over
     function concertOver() public onlyOwner {
         finish = true;
-        emit ConcertOver(concertName, concertDate);
+        emit ConcertOver(concertName);
     }
     
     // Retrieve all NFT owner info
