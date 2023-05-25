@@ -23,6 +23,7 @@ contract TicketNFTFactory is Ownable {
 
     function createTicketNFT(string memory _concertName, uint256 _concertDate, uint256 _maxTicketCount, uint256 _ticketPrice) public returns (address) {
         require(_whiteList[msg.sender], "You are not authorized ticket manager");
+        // Ticket price = ticketPrice * 0.001 ETH
         TicketNFT newTicket = new TicketNFT(_concertName, _concertDate, _maxTicketCount, _ticketPrice);
         ticketNFTs.push(newTicket);
 
@@ -32,7 +33,9 @@ contract TicketNFTFactory is Ownable {
     }
 
     // Showing all concert information
-    function getConcertInfo() public view returns (address[] memory, address[] memory, string[] memory, uint256[] memory, uint256[] memory, uint256[] memory) {
+    function getConcertInfo() public view returns (
+        address[] memory, address[] memory, string[] memory,
+         uint256[] memory, uint256[] memory, uint256[] memory, bool[] memory) {
         uint256 totalConcerts = ticketNFTs.length;
 
         address[] memory ticketNFTAddresses = new address[](totalConcerts);
@@ -41,6 +44,7 @@ contract TicketNFTFactory is Ownable {
         uint256[] memory concertDates = new uint256[](totalConcerts);
         uint256[] memory maxTicketCounts = new uint256[](totalConcerts);
         uint256[] memory ticketPrices = new uint256[](totalConcerts);
+        bool[] memory finish = new bool[](totalConcerts);
 
         for (uint256 i = 0; i < totalConcerts; i++) {
             TicketNFT ticketNFT = ticketNFTs[i];
@@ -50,9 +54,11 @@ contract TicketNFTFactory is Ownable {
             concertDates[i] = ticketNFT.concertDate();
             maxTicketCounts[i] = ticketNFT.maxTicketCount();
             ticketPrices[i] = ticketNFT.ticketPrice();
+            finish[i] = ticketNFT.finish();
         }
 
-        return (ticketNFTAddresses, contractOwners, concertNames, concertDates, maxTicketCounts, ticketPrices);
+        return (ticketNFTAddresses, contractOwners, concertNames,
+                    concertDates, maxTicketCounts, ticketPrices, finish);
     }
 
     // Whitelist methods
@@ -76,4 +82,5 @@ contract TicketNFTFactory is Ownable {
         return _whiteList[user];
     }
 
+    // 사진 링크 추가?
 }

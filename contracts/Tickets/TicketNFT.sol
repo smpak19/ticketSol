@@ -24,11 +24,11 @@ contract TicketNFT is ERC721, Ownable {
         concertName = _concertName;
         concertDate = _concertDate;
         maxTicketCount = _maxTicketCount;
-        ticketPrice = _ticketPrice;
+        ticketPrice = _ticketPrice * 1e15;
         finish = false;
     }
 
-    function safeMint(address to) public onlyOwner {
+    function safeMint(address to) private {
         require(!finish, "Concert is over!");
         require(_tokenId.current() < maxTicketCount, "Maximum ticket count reached");
         // Limit one ticket per address
@@ -50,7 +50,6 @@ contract TicketNFT is ERC721, Ownable {
 
     // Prevent user transfer NFT before concert finish
     function transferFrom(address from, address to, uint256 tokenId) public override {
-        // But user can collect more than 1 ticket?
         require(finish, "You cannot trade ticket before concert over");
         super.transferFrom(from, to, tokenId);
     }
@@ -72,17 +71,5 @@ contract TicketNFT is ERC721, Ownable {
         }
 
         return owners;
-    }
-
-    // Input: user address, Output: if user has ticket, return tokenId. Else, return 0.
-    function getTokenId(address user) public view returns (uint256) {
-        uint256 mintedTokens = _tokenId.current();
-
-        for (uint256 i=1; i <= mintedTokens; i++) {
-            if (ownerOf(i) == user) {
-                return i;
-            }
-        }
-        return 0;
     }
 }
