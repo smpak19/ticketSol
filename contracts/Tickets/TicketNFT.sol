@@ -43,6 +43,7 @@ contract TicketNFT is ERC721URIStorage, Ownable {
 
     // User pay -> mint to user
     function sellTicket(address buyer) public payable {
+        require(msg.sender == buyer, "Your address is not equal to buyer!");
         require(msg.value >= ticketPrice, "Invalid amount of Ether");
         safeMint(buyer);
         payable(owner()).transfer(msg.value);
